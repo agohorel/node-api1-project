@@ -64,16 +64,18 @@ server.post("/api/users", async (req, res) => {
     res
       .status(400)
       .json({ errorMessage: "Please provide name and bio for the user" });
-  }
-  try {
-    const newEntryID = await db.insert(body);
-    const newEntry = await db.findById(newEntryID.id);
-    res.status(201).json(newEntry);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({
-      errorMessage: "There was an error while saving the user to the database."
-    });
+  } else {
+    try {
+      const { id } = await db.insert(body);
+      const newEntry = await db.findById(id);
+      res.status(201).json(newEntry);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({
+        errorMessage:
+          "There was an error while saving the user to the database."
+      });
+    }
   }
 });
 
@@ -109,26 +111,26 @@ server.delete("/api/users/:id", async (req, res) => {
 // @desc   - update a specified user
 // @access - public
 server.put("/api/users/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { body } = req;
+  const { id } = req.params;
+  const { body } = req;
 
-    if (!body.name || !body.bio) {
-      res.status(400).json({
-        errorMessage: "Please provide both the name and bio for the user."
-      });
+  if (!body.name || !body.bio) {
+    res.status(400).json({
+      errorMessage: "Please provide both the name and bio for the user."
+    });
+  } else {
+    try {
+      const updated = await db.update(id, body);
+
+      if (updated) {
+        const updatedUser = await db.findById(id);
+        res.status(200).json(updatedUser);
+      }
+    } catch (err) {
+      console.error(err);
+      res
+        .status(500)
+        .json({ errorMessage: "The user information could not be modified." });
     }
-
-    const updated = await db.update(id, body);
-
-    if (updated) {
-      const updatedUser = await db.findById(id);
-      res.status(200).json(updatedUser);
-    }
-  } catch (err) {
-    console.error(err);
-    res
-      .status(500)
-      .json({ errorMessage: "The user information could not be modified." });
   }
 });
