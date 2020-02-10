@@ -1,9 +1,11 @@
 const express = require("express");
+const cors = require("cors");
 const db = require("./data/db");
 const port = 8000;
 
 const server = express();
 server.use(express.json());
+server.use(cors());
 
 server.listen(port, () => console.log(`server listening on port ${port}`));
 
