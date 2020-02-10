@@ -40,4 +40,22 @@ server.get("/api/users", async (req, res) => {
   }
 });
 
+server.get("/api/users/:id", async (req, res) => {
+  try {
+    const user = await db.findById(req.params.id);
+
+    if (user) {
+      res.status(200).json(user);
+    } else
+      res.status(404).json({
+        errorMessage: "The user with the specified ID does not exist"
+      });
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .json({ errorMessage: "The user information could not be retrieved." });
+  }
+});
+
 server.listen(port, () => console.log(`server listening on port ${port}`));
