@@ -9,7 +9,6 @@ server.get("/", (req, res) => {
   res.send("hello world");
 });
 
-// POST api/users
 server.post("/api/users", async (req, res) => {
   if (!req.body.name || !req.body.bio) {
     res
@@ -55,6 +54,22 @@ server.get("/api/users/:id", async (req, res) => {
     res
       .status(500)
       .json({ errorMessage: "The user information could not be retrieved." });
+  }
+});
+
+server.delete("/api/users/:id", async (req, res) => {
+  try {
+    const deleted = await db.remove(req.params.id);
+    if (deleted) {
+      res.status(200).send("deleted user successfully");
+    } else {
+      res
+        .status(404)
+        .json({ message: "the user with the specified ID does not exist." });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ errorMessage: "The user could not be removed." });
   }
 });
 
