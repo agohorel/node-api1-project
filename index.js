@@ -5,28 +5,15 @@ const port = 8000;
 const server = express();
 server.use(express.json());
 
-server.get("/", (req, res) => {
-  res.send("hello world");
-});
+server.listen(port, () => console.log(`server listening on port ${port}`));
 
-server.post("/api/users", async (req, res) => {
-  if (!req.body.name || !req.body.bio) {
-    res
-      .status(400)
-      .json({ errorMessage: "Please provide name and bio for the user" });
-  }
-  try {
-    const newEntryID = await db.insert(req.body);
-    const newEntry = await db.findById(newEntryID.id);
-    res.status(201).json(newEntry);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({
-      errorMessage: "There was an error while saving the user to the database."
-    });
-  }
-});
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////GET ROUTES//////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
 
+// @route  - GET /api/users
+// @desc   - returns all users
+// @access - public
 server.get("/api/users", async (req, res) => {
   try {
     const user = await db.find();
@@ -39,9 +26,13 @@ server.get("/api/users", async (req, res) => {
   }
 });
 
+// @route  - GET /api/users/:id
+// @desc   - returns a specified user
+// @access - public
 server.get("/api/users/:id", async (req, res) => {
+  const { id } = req.params;
   try {
-    const user = await db.findById(req.params.id);
+    const user = await db.findById(id);
 
     if (user) {
       res.status(200).json(user);
@@ -57,9 +48,44 @@ server.get("/api/users/:id", async (req, res) => {
   }
 });
 
-server.delete("/api/users/:id", async (req, res) => {
+///////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////POST ROUTES////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+
+// @route  - POST /api/users
+// @desc   - add a new user
+// @access - public
+server.post("/api/users", async (req, res) => {
+  const { body } = req;
+
+  if (!body.name || !body.bio) {
+    res
+      .status(400)
+      .json({ errorMessage: "Please provide name and bio for the user" });
+  }
   try {
-    const deleted = await db.remove(req.params.id);
+    const newEntryID = await db.insert(body);
+    const newEntry = await db.findById(newEntryID.id);
+    res.status(201).json(newEntry);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      errorMessage: "There was an error while saving the user to the database."
+    });
+  }
+});
+
+///////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////DELETE ROUTES//////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+
+// @route  - DELETE /api/users/:id
+// @desc   - delete a specified user
+// @access - public
+server.delete("/api/users/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const deleted = await db.remove(id);
     if (deleted) {
       res.status(200).send("deleted user successfully");
     } else {
@@ -73,6 +99,13 @@ server.delete("/api/users/:id", async (req, res) => {
   }
 });
 
+///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////PUT ROUTES//////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+
+// @route  - PUT /api/users/:id
+// @desc   - update a specified user
+// @access - public
 server.put("/api/users/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -97,5 +130,3 @@ server.put("/api/users/:id", async (req, res) => {
       .json({ errorMessage: "The user information could not be modified." });
   }
 });
-
-server.listen(port, () => console.log(`server listening on port ${port}`));
