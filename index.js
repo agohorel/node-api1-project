@@ -73,4 +73,29 @@ server.delete("/api/users/:id", async (req, res) => {
   }
 });
 
+server.put("/api/users/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { body } = req;
+
+    if (!body.name || !body.bio) {
+      res.status(400).json({
+        errorMessage: "Please provide both the name and bio for the user."
+      });
+    }
+
+    const updated = await db.update(id, body);
+
+    if (updated) {
+      const updatedUser = await db.findById(id);
+      res.status(200).json(updatedUser);
+    }
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .json({ errorMessage: "The user information could not be modified." });
+  }
+});
+
 server.listen(port, () => console.log(`server listening on port ${port}`));
