@@ -28,4 +28,16 @@ server.post("/api/users", async (req, res) => {
   }
 });
 
+server.get("/api/users", async (req, res) => {
+  try {
+    const user = await db.find();
+    res.status(200).json(user);
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .json({ errorMessage: "The user information could not be retrieved." });
+  }
+});
+
 server.listen(port, () => console.log(`server listening on port ${port}`));
